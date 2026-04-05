@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest'
-import type { GitHubUser, GitHubRepo, CreatedIssue } from '@github-issue-reporter/shared'
+import type { GitHubUser, GitHubRepo, GitHubLabel, GitHubIssueType, CreatedIssue } from '@github-issue-reporter/shared'
 
 function createOctokit(token: string): Octokit {
   return new Octokit({ auth: token })
@@ -33,16 +33,49 @@ export async function listWritableRepos(token: string): Promise<GitHubRepo[]> {
     }))
 }
 
+export async function listLabels(token: string, owner: string, repo: string): Promise<GitHubLabel[]> {
+  const octokit = createOctokit(token)
+  try {
+    const labels = await octokit.paginate(octokit.rest.issues.listLabelsForRepo, {
+      owner,
+      repo,
+      per_page: 100,
+    })
+    return labels.map(l => ({
+      id: l.id,
+      name: l.name,
+      color: l.color,
+    }))
+  } catch {
+    return []
+  }
+}
+
+export async function listIssueTypes(token: string, owner: string, repo: string): Promise<GitHubIssueType[]> {
+  const octokit = createOctokit(token)
+  try {
+    const { data } = await octokit.request('GET /repos/{owner}/{repo}/issues/types', { owner, repo })
+    return (data as Array<{ id: number; name: string; description: string | null }>).map(t => ({
+      id: t.id,
+      name: t.name,
+      description: t.description ?? null,
+    }))
+  } catch {
+    return []
+  }
+}
+
 export async function createIssue(
   token: string,
   owner: string,
   repo: string,
   title: string,
   body: string,
+  labels?: string[],
 ): Promise<CreatedIssue> {
   const octokit = createOctokit(token)
   try {
-    const { data } = await octokit.rest.issues.create({ owner, repo, title, body })
+    const { data } = await octokit.rest.issues.create({ owner, repo, title, body, labels })
     return {
       number: data.number,
       htmlUrl: data.html_url,

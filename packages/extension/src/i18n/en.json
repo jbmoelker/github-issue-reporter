@@ -23,6 +23,11 @@
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Describe the issue…",
     "includeUrl": "Include current URL in report",
+    "issueTypeLabel": "Type",
+    "issueTypePlaceholder": "Select type…",
+    "labelsLabel": "Labels",
+    "labelsPlaceholder": "Select labels…",
+    "labelsUnavailable": "Some labels are no longer available in this repository",
     "submit": "Create issue",
     "submitting": "Creating issue…",
     "logout": "Logout"
@@ -37,6 +42,8 @@
     "tryAgain": "Try again"
   },
   "settings": {
+    "selectLanguage": "Select language",
+    "selectTheme": "Select theme",
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeAuto": "Auto"

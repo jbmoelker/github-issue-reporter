@@ -3,7 +3,7 @@
     "name": "GitHub Issue Reporter"
   },
   "login": {
-    "subtitle": "Meld problemen direct vanuit je browser",
+    "subtitle": "Meld issues direct vanuit je browser",
     "button": "Inloggen met GitHub",
     "rememberMe": "Onthoud mij"
   },
@@ -23,6 +23,11 @@
     "descriptionLabel": "Omschrijving",
     "descriptionPlaceholder": "Beschrijf de issue…",
     "includeUrl": "Huidige URL opnemen in rapport",
+    "issueTypeLabel": "Type",
+    "issueTypePlaceholder": "Selecteer type…",
+    "labelsLabel": "Labels",
+    "labelsPlaceholder": "Selecteer labels…",
+    "labelsUnavailable": "Sommige labels zijn niet meer beschikbaar in deze repository",
     "submit": "Issue aanmaken",
     "submitting": "Issue aanmaken…",
     "logout": "Uitloggen"
@@ -37,6 +42,8 @@
     "tryAgain": "Probeer opnieuw"
   },
   "settings": {
+    "selectLanguage": "Taal selecteren",
+    "selectTheme": "Thema selecteren",
     "themeLight": "Licht",
     "themeDark": "Donker",
     "themeAuto": "Automatisch"

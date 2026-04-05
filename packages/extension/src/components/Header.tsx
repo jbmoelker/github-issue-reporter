@@ -1,13 +1,13 @@
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react'
-import { Globe, Sun, Moon, Monitor, ChevronDown } from 'lucide-react'
+import { Globe, Sun, Moon, Contrast, ChevronDown } from 'lucide-react'
 import { useApp, type Theme } from '../contexts/app'
-import { LOCALES, type LocaleCode } from '../i18n/index'
+import { LOCALES, getLocaleLabel, type LocaleCode } from '../i18n/index'
 import type { GitHubUser } from '@github-issue-reporter/shared'
 
 const THEME_ICONS: Record<Theme, typeof Sun> = {
   light: Sun,
   dark: Moon,
-  auto: Monitor,
+  auto: Contrast,
 }
 
 interface Props {
@@ -29,7 +29,7 @@ export function Header({ user, onLogout }: Props) {
   const themeOptions: { value: Theme; label: string; Icon: typeof Sun }[] = [
     { value: 'light', label: t.settings.themeLight, Icon: Sun },
     { value: 'dark',  label: t.settings.themeDark,  Icon: Moon },
-    { value: 'auto',  label: t.settings.themeAuto,  Icon: Monitor },
+    { value: 'auto',  label: t.settings.themeAuto,  Icon: Contrast },
   ]
 
   return (
@@ -60,19 +60,19 @@ export function Header({ user, onLogout }: Props) {
         <Menu as="div" className="relative">
           <MenuButton
             className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            title="Language"
           >
-            <Globe className="w-4 h-4" />
+            <Globe className="w-4 h-4" aria-hidden="true" />
+            <span className="sr-only">{t.settings.selectLanguage}</span>
           </MenuButton>
           <MenuItems className={menuPanelClass}>
-            {(Object.entries(LOCALES) as [LocaleCode, { label: string }][]).map(([code, { label }]) => (
+            {(Object.keys(LOCALES) as LocaleCode[]).map((code) => (
               <MenuItem
                 key={code}
                 as="button"
                 onClick={() => setLocale(code)}
                 className={`${menuItemClass} ${locale === code ? 'font-semibold text-gray-900 dark:text-white' : ''}`}
               >
-                {label}
+                {getLocaleLabel(code)}
               </MenuItem>
             ))}
           </MenuItems>
@@ -82,9 +82,9 @@ export function Header({ user, onLogout }: Props) {
         <Menu as="div" className="relative">
           <MenuButton
             className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            title="Theme"
           >
-            <ThemeIcon className="w-4 h-4" />
+            <ThemeIcon className="w-4 h-4" aria-hidden="true" />
+            <span className="sr-only">{t.settings.selectTheme}</span>
           </MenuButton>
           <MenuItems className={menuPanelClass}>
             {themeOptions.map(({ value, label, Icon }) => (

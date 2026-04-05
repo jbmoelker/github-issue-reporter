@@ -31,6 +31,18 @@ export interface CreatedIssue {
   title: string
 }
 
+export interface GitHubLabel {
+  id: number
+  name: string
+  color: string
+}
+
+export interface GitHubIssueType {
+  id: number
+  name: string
+  description: string | null
+}
+
 /** Shape of .github/issue-reporter.yml in the target repository */
 export interface RepoConfig {
   context?: {
