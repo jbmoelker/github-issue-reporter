@@ -1,0 +1,44 @@
+{
+  "app": {
+    "name": "GitHub Issue Reporter"
+  },
+  "login": {
+    "subtitle": "Report issues directly from your browser",
+    "button": "Login with GitHub",
+    "rememberMe": "Remember me"
+  },
+  "waiting": {
+    "title": "Waiting for GitHub authorization",
+    "subtitle": "Complete the login in the tab that just opened.",
+    "cancel": "Cancel"
+  },
+  "report": {
+    "repositoryLabel": "Repository",
+    "repositoryPlaceholderLoading": "Loading repositories…",
+    "repositoryPlaceholderSearch": "Search repositories…",
+    "repositoryNoResults": "No repositories found",
+    "repositoryNotAvailable": "Previously selected repository is no longer accessible",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Short summary of the issue",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe the issue…",
+    "includeUrl": "Include current URL in report",
+    "submit": "Create issue",
+    "submitting": "Creating issue…",
+    "logout": "Logout"
+  },
+  "success": {
+    "title": "Issue created",
+    "openedInTab": "Opened in a new tab",
+    "reportAnother": "Report another issue"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again"
+  },
+  "settings": {
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeAuto": "Auto"
+  }
+}

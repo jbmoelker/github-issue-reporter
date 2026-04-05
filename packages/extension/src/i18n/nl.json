@@ -1,0 +1,44 @@
+{
+  "app": {
+    "name": "GitHub Issue Reporter"
+  },
+  "login": {
+    "subtitle": "Meld problemen direct vanuit je browser",
+    "button": "Inloggen met GitHub",
+    "rememberMe": "Onthoud mij"
+  },
+  "waiting": {
+    "title": "Wachten op GitHub-autorisatie",
+    "subtitle": "Voltooi de aanmelding in het tabblad dat zojuist werd geopend.",
+    "cancel": "Annuleer"
+  },
+  "report": {
+    "repositoryLabel": "Repository",
+    "repositoryPlaceholderLoading": "Repositories laden…",
+    "repositoryPlaceholderSearch": "Zoek repositories…",
+    "repositoryNoResults": "Geen repositories gevonden",
+    "repositoryNotAvailable": "De eerder geselecteerde repository is niet meer toegankelijk",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Korte samenvatting van de issue",
+    "descriptionLabel": "Omschrijving",
+    "descriptionPlaceholder": "Beschrijf de issue…",
+    "includeUrl": "Huidige URL opnemen in rapport",
+    "submit": "Issue aanmaken",
+    "submitting": "Issue aanmaken…",
+    "logout": "Uitloggen"
+  },
+  "success": {
+    "title": "Issue aangemaakt",
+    "openedInTab": "Geopend in een nieuw tabblad",
+    "reportAnother": "Nog een issue melden"
+  },
+  "errors": {
+    "somethingWentWrong": "Er is iets misgegaan",
+    "tryAgain": "Probeer opnieuw"
+  },
+  "settings": {
+    "themeLight": "Licht",
+    "themeDark": "Donker",
+    "themeAuto": "Automatisch"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "github-issue-reporter",
+  "private": true,
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @github-issue-reporter/api dev",
+    "dev:extension": "pnpm --filter @github-issue-reporter/extension dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

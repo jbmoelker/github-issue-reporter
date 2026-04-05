@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.DS_Store
+.output/
+.nitro/
+build/
+.wrangler/
+
+# Extension builds
+packages/extension/build/
+packages/extension/.plasmo/
+
+# Env files
+.env
+.env.local
+*.local

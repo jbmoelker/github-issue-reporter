@@ -1,0 +1,38 @@
+{
+  "name": "@github-issue-reporter/extension",
+  "displayName": "GitHub Issue Reporter",
+  "version": "0.1.0",
+  "description": "Report GitHub issues directly from your browser",
+  "private": true,
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@github-issue-reporter/shared": "workspace:*",
+    "@headlessui/react": "^2.1.2",
+    "lucide-react": "^0.441.0",
+    "@octokit/rest": "^21.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "plasmo": "^0.90.4",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.5.0"
+  },
+  "manifest": {
+    "permissions": ["storage", "tabs"],
+    "host_permissions": [
+      "https://api.github.com/*",
+      "http://localhost:3001/*",
+      "https://*.workers.dev/*"
+    ]
+  }
+}

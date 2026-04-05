@@ -1,0 +1,20 @@
+{
+  "name": "@github-issue-reporter/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build",
+    "typecheck": "tsc --noEmit",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@github-issue-reporter/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "nitropack": "^2.9.7",
+    "typescript": "^5.5.0",
+    "wrangler": "^3.60.0"
+  }
+}
