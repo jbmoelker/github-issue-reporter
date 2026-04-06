@@ -221,9 +221,13 @@ export function AnnotationEditor({ screenshot, screenshotIndex }: Props) {
   const toolRef = useRef<Tool>(tool)
   const colorRef = useRef<string>(color)
   const blurAmountRef = useRef<number>(blurAmount)
+  // historyIndexRef mirrors historyIndex state so snapshot() (called from
+  // canvas event handlers set up once at mount) always sees the current value.
+  const historyIndexRef = useRef(historyIndex)
   useEffect(() => { toolRef.current = tool }, [tool])
   useEffect(() => { colorRef.current = color }, [color])
   useEffect(() => { blurAmountRef.current = blurAmount }, [blurAmount])
+  useEffect(() => { historyIndexRef.current = historyIndex }, [historyIndex])
 
   // -------------------------------------------------------------------------
   // History helpers
@@ -235,11 +239,14 @@ export function AnnotationEditor({ screenshot, screenshotIndex }: Props) {
     delete json.backgroundImage
     const str = JSON.stringify(json)
     setHistory(prev => {
-      const trimmed = prev.slice(0, historyIndex + 1)
+      const trimmed = prev.slice(0, historyIndexRef.current + 1)
       return [...trimmed, str]
     })
     setHistoryIndex(prev => prev + 1)
-  }, [historyIndex])
+  // No historyIndex dependency — we read from historyIndexRef to avoid
+  // the stale closure problem in canvas event handlers set up at mount.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const restoreSnapshot = useCallback(async (canvas: Canvas, jsonStr: string) => {
     const json = JSON.parse(jsonStr)
