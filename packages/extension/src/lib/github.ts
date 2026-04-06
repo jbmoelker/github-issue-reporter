@@ -65,6 +65,63 @@ export async function listIssueTypes(token: string, owner: string, repo: string)
   }
 }
 
+const SCREENSHOTS_TAG = 'issue-screenshots'
+
+async function getOrCreateScreenshotsRelease(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+): Promise<number> {
+  try {
+    const { data } = await octokit.rest.repos.getReleaseByTag({ owner, repo, tag: SCREENSHOTS_TAG })
+    return data.id
+  } catch {
+    // Release doesn't exist yet — create it as a pre-release so it stays off the main releases page
+    const { data } = await octokit.rest.repos.createRelease({
+      owner,
+      repo,
+      tag_name: SCREENSHOTS_TAG,
+      name: 'Issue Screenshots',
+      body: 'Stores screenshots attached to GitHub issues via the GitHub Issue Reporter extension.',
+      prerelease: true,
+    })
+    return data.id
+  }
+}
+
+export async function uploadScreenshot(
+  token: string,
+  owner: string,
+  repo: string,
+  dataUrl: string,
+  filename: string,
+): Promise<string> {
+  const octokit = createOctokit(token)
+  const releaseId = await getOrCreateScreenshotsRelease(octokit, owner, repo)
+
+  // Convert base64 data URL to binary Blob
+  const base64 = dataUrl.split(',')[1]
+  const byteString = atob(base64)
+  const bytes = new Uint8Array(byteString.length)
+  for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i)
+  const blob = new Blob([bytes], { type: 'image/png' })
+
+  // Use fetch directly against uploads.github.com — Octokit's binary handling
+  // is unreliable in browser/extension environments
+  const url = `https://uploads.github.com/repos/${owner}/${repo}/releases/${releaseId}/assets?name=${encodeURIComponent(filename)}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `token ${token}`, 'Content-Type': 'image/png' },
+    body: blob,
+  })
+  if (!res.ok) {
+    const { message } = await res.json().catch(() => ({ message: `Upload failed: ${res.status}` }))
+    throw new Error(message)
+  }
+  const asset = await res.json() as { browser_download_url: string }
+  return asset.browser_download_url
+}
+
 export async function createIssue(
   token: string,
   owner: string,

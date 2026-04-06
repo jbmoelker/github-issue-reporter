@@ -29,9 +29,10 @@
     "typescript": "^5.5.0"
   },
   "manifest": {
-    "permissions": ["storage", "tabs"],
+    "permissions": ["storage", "tabs", "activeTab"],
     "host_permissions": [
       "https://api.github.com/*",
+      "https://uploads.github.com/*",
       "http://localhost:3001/*",
       "https://*.workers.dev/*"
     ]
