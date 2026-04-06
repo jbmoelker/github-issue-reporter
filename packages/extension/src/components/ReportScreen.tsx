@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Combobox,
   ComboboxButton,
@@ -7,13 +7,21 @@ import {
   ComboboxOption,
 } from '@headlessui/react'
 import ReactSelect from 'react-select'
-import { Camera, ChevronDown, X } from 'lucide-react'
+import { Camera, ChevronDown, Pencil, X } from 'lucide-react'
 import { useRepos } from '../hooks/useRepos'
 import { useLabels } from '../hooks/useLabels'
 import { useIssueTypes } from '../hooks/useIssueTypes'
 import { useApp } from '../contexts/app'
 import { createIssue, uploadScreenshot } from '../lib/github'
 import { getBrowserContext, formatContextMarkdown } from '../lib/context'
+import {
+  getScreenshots,
+  addScreenshot,
+  removeScreenshot,
+  setScreenshots,
+  type StoredScreenshot,
+} from '../lib/screenshots'
+import { loadFormState, saveFormState, clearFormState } from '../lib/formState'
 import type { GitHubRepo, GitHubIssueType, CreatedIssue } from '@github-issue-reporter/shared'
 
 interface Props {
@@ -24,12 +32,12 @@ interface Props {
 export function ReportScreen({ token, onIssueCreated }: Props) {
   const { t, theme } = useApp()
   const { repos, selectedRepo, selectRepo, reposLoading, error: reposError } = useRepos(token)
-  const { labels, selectedLabels, setSelectedLabels, hasUnavailableLabels } = useLabels(
+  const { labels, labelsLoading, selectedLabels, setSelectedLabels, hasUnavailableLabels } = useLabels(
     token,
     selectedRepo?.owner ?? null,
     selectedRepo?.name ?? null,
   )
-  const { issueTypes, selectedIssueType, setSelectedIssueType } = useIssueTypes(
+  const { issueTypes, issueTypesLoading, selectedIssueType, setSelectedIssueType } = useIssueTypes(
     token,
     selectedRepo?.owner ?? null,
     selectedRepo?.name ?? null,
@@ -37,11 +45,82 @@ export function ReportScreen({ token, onIssueCreated }: Props) {
   const [query, setQuery] = useState('')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
-  const [screenshots, setScreenshots] = useState<string[]>([])
+  const [screenshots, setScreenshotsState] = useState<StoredScreenshot[]>([])
   const [capturing, setCapturing] = useState(false)
   const [includeUrl, setIncludeUrl] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  // --- Form state persistence ---
+  const [tabUrl, setTabUrl] = useState<string | null>(null)
+  // storageLoaded: true once we've read from chrome.storage.local
+  const [storageLoaded, setStorageLoaded] = useState(false)
+  // Pending restore IDs (set from storage, cleared once applied to the loaded lists)
+  const pendingLabelIdsRef = useRef<number[] | null>(null)
+  const pendingIssueTypeIdRef = useRef<number | null>(null)
+
+  // Load screenshots + tab URL + persisted form state on mount
+  useEffect(() => {
+    getScreenshots().then(setScreenshotsState)
+
+    async function loadState() {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+      const url = tab?.url ?? ''
+      setTabUrl(url)
+
+      const saved = await loadFormState(url)
+      if (saved) {
+        if (saved.title) setTitle(saved.title)
+        if (saved.body) setBody(saved.body)
+        setIncludeUrl(saved.includeUrl)
+        if (saved.labelIds.length > 0) pendingLabelIdsRef.current = saved.labelIds
+        if (saved.issueTypeId !== null) pendingIssueTypeIdRef.current = saved.issueTypeId
+      }
+      setStorageLoaded(true)
+    }
+    loadState()
+  }, [])
+
+  // Restore label selection once labels finish loading
+  useEffect(() => {
+    if (!storageLoaded || labelsLoading || pendingLabelIdsRef.current === null) return
+    const ids = new Set(pendingLabelIdsRef.current)
+    setSelectedLabels(labels.filter(l => ids.has(l.id)))
+    pendingLabelIdsRef.current = null
+  }, [storageLoaded, labelsLoading, labels, setSelectedLabels])
+
+  // Restore issue type selection once types finish loading
+  useEffect(() => {
+    if (!storageLoaded || issueTypesLoading || pendingIssueTypeIdRef.current === null) return
+    setSelectedIssueType(issueTypes.find(t => t.id === pendingIssueTypeIdRef.current!) ?? null)
+    pendingIssueTypeIdRef.current = null
+  }, [storageLoaded, issueTypesLoading, issueTypes, setSelectedIssueType])
+
+  // Save form state whenever it changes (skip until storage loaded and no pending restores)
+  useEffect(() => {
+    if (!storageLoaded || !tabUrl || labelsLoading || issueTypesLoading) return
+    if (pendingLabelIdsRef.current !== null || pendingIssueTypeIdRef.current !== null) return
+    saveFormState(tabUrl, {
+      title,
+      body,
+      includeUrl,
+      labelIds: selectedLabels.map(l => l.id),
+      issueTypeId: selectedIssueType?.id ?? null,
+    })
+  }, [title, body, includeUrl, selectedLabels, selectedIssueType, tabUrl, storageLoaded, labelsLoading, issueTypesLoading])
+
+  // Listen for annotation results written by the annotation window
+  useEffect(() => {
+    function handleStorageChange(
+      changes: Record<string, chrome.storage.StorageChange>,
+    ) {
+      if (changes.screenshots?.newValue) {
+        setScreenshotsState(changes.screenshots.newValue as StoredScreenshot[])
+      }
+    }
+    chrome.storage.session.onChanged.addListener(handleStorageChange)
+    return () => chrome.storage.session.onChanged.removeListener(handleStorageChange)
+  }, [])
 
   const filteredRepos: GitHubRepo[] = query
     ? repos.filter(r => r.fullName.toLowerCase().includes(query.toLowerCase()))
@@ -53,10 +132,21 @@ export function ReportScreen({ token, onIssueCreated }: Props) {
     setCapturing(true)
     try {
       const dataUrl = await chrome.tabs.captureVisibleTab({ format: 'png' })
-      setScreenshots(prev => [...prev, dataUrl])
+      const next = await addScreenshot(dataUrl)
+      setScreenshotsState(next)
     } finally {
       setCapturing(false)
     }
+  }
+
+  async function handleRemoveScreenshot(index: number) {
+    const next = await removeScreenshot(index)
+    setScreenshotsState(next)
+  }
+
+  function openAnnotation(index: number) {
+    const url = chrome.runtime.getURL('tabs/annotation.html') + `?index=${index}`
+    chrome.windows.create({ url, type: 'popup', width: 1100, height: 720 })
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -74,8 +164,14 @@ export function ReportScreen({ token, onIssueCreated }: Props) {
       if (screenshots.length > 0) {
         const timestamp = Date.now()
         const urls = await Promise.all(
-          screenshots.map((dataUrl, i) =>
-            uploadScreenshot(token, selectedRepo.owner, selectedRepo.name, dataUrl, `${timestamp}-${i + 1}.png`)
+          screenshots.map((s, i) =>
+            uploadScreenshot(
+              token,
+              selectedRepo.owner,
+              selectedRepo.name,
+              s.annotated ?? s.original,
+              `${timestamp}-${i + 1}.png`,
+            )
           )
         )
         screenshotBlock = urls.map((url, i) => `![${t.report.screenshot} ${i + 1}](${url})`).join('\n') + '\n\n'
@@ -93,6 +189,10 @@ export function ReportScreen({ token, onIssueCreated }: Props) {
         fullBody,
         selectedLabels.length > 0 ? selectedLabels.map(l => l.name) : undefined,
       )
+
+      // Clear persisted state after successful submission
+      await setScreenshots([])
+      if (tabUrl) await clearFormState(tabUrl)
 
       await chrome.tabs.create({ url: issue.htmlUrl })
       onIssueCreated(issue)
@@ -227,16 +327,36 @@ export function ReportScreen({ token, onIssueCreated }: Props) {
       <div>
         {screenshots.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2" role="list" aria-label={t.report.screenshotsLabel}>
-            {screenshots.map((dataUrl, i) => (
+            {screenshots.map((s, i) => (
               <div key={i} className="relative group" role="listitem">
-                <img
-                  src={dataUrl}
-                  alt={`${t.report.screenshot} ${i + 1}`}
-                  className="w-20 h-14 object-cover rounded border border-gray-200 dark:border-gray-700"
-                />
+                {/* Thumbnail — click to annotate */}
                 <button
                   type="button"
-                  onClick={() => setScreenshots(prev => prev.filter((_, j) => j !== i))}
+                  onClick={() => openAnnotation(i)}
+                  className="block focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 rounded"
+                  aria-label={`${t.report.screenshot} ${i + 1} — ${t.report.takeScreenshot}`}
+                >
+                  <img
+                    src={s.annotated ?? s.original}
+                    alt={`${t.report.screenshot} ${i + 1}`}
+                    className="w-20 h-14 object-cover rounded border border-gray-200 dark:border-gray-700"
+                  />
+                  {/* Annotated badge */}
+                  {s.annotated && (
+                    <span className="absolute bottom-0.5 left-0.5 bg-gray-900/70 rounded px-0.5">
+                      <Pencil className="w-2.5 h-2.5 text-white" aria-hidden="true" />
+                    </span>
+                  )}
+                  {/* Edit overlay on hover */}
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <Pencil className="w-4 h-4 text-white" aria-hidden="true" />
+                  </span>
+                </button>
+
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveScreenshot(i)}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                   aria-label={`${t.report.removeScreenshot} ${i + 1}`}
                 >

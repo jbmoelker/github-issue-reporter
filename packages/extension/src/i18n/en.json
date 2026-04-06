@@ -45,6 +45,21 @@
     "somethingWentWrong": "Something went wrong",
     "tryAgain": "Try again"
   },
+  "annotation": {
+    "done": "Done",
+    "cancel": "Cancel",
+    "undo": "Undo",
+    "redo": "Redo",
+    "toolSelect": "Select",
+    "toolText": "Text",
+    "toolRectFilled": "Filled rectangle",
+    "toolRectOutlined": "Outlined rectangle",
+    "toolRectBlur": "Blur rectangle",
+    "toolArrow": "Arrow",
+    "deleteSelected": "Delete selected",
+    "blurAmount": "Blur amount",
+    "colorPalette": "Color"
+  },
   "settings": {
     "selectLanguage": "Select language",
     "selectTheme": "Select theme",

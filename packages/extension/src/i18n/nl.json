@@ -45,6 +45,21 @@
     "somethingWentWrong": "Er is iets misgegaan",
     "tryAgain": "Probeer opnieuw"
   },
+  "annotation": {
+    "done": "Gereed",
+    "cancel": "Annuleren",
+    "undo": "Ongedaan maken",
+    "redo": "Opnieuw",
+    "toolSelect": "Selecteren",
+    "toolText": "Tekst",
+    "toolRectFilled": "Gevulde rechthoek",
+    "toolRectOutlined": "Omlijnde rechthoek",
+    "toolRectBlur": "Vervag-rechthoek",
+    "toolArrow": "Pijl",
+    "deleteSelected": "Verwijder selectie",
+    "blurAmount": "Vervaging",
+    "colorPalette": "Kleur"
+  },
   "settings": {
     "selectLanguage": "Taal selecteren",
     "selectTheme": "Thema selecteren",

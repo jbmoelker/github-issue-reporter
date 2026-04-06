@@ -6,18 +6,22 @@ export function useLabels(token: string, owner: string | null, repo: string | nu
   const [labels, setLabels] = useState<GitHubLabel[]>([])
   const [selectedLabels, setSelectedLabels] = useState<GitHubLabel[]>([])
   const [hasUnavailableLabels, setHasUnavailableLabels] = useState(false)
+  const [labelsLoading, setLabelsLoading] = useState(false)
 
   useEffect(() => {
     if (!owner || !repo) {
       setLabels([])
       setSelectedLabels([])
       setHasUnavailableLabels(false)
+      setLabelsLoading(false)
       return
     }
     let cancelled = false
+    setLabelsLoading(true)
     listLabels(token, owner, repo).then(fetched => {
       if (cancelled) return
       setLabels(fetched)
+      setLabelsLoading(false)
       // Remove any selected labels that no longer exist in the new repo
       setSelectedLabels(prev => {
         if (prev.length === 0) return prev
@@ -29,5 +33,5 @@ export function useLabels(token: string, owner: string | null, repo: string | nu
     return () => { cancelled = true }
   }, [token, owner, repo])
 
-  return { labels, selectedLabels, setSelectedLabels, hasUnavailableLabels }
+  return { labels, labelsLoading, selectedLabels, setSelectedLabels, hasUnavailableLabels }
 }
