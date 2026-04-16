@@ -9,6 +9,7 @@ build/
 # Extension builds
 packages/extension/build/
 packages/extension/.plasmo/
+packages/extension/assets/icon/
 
 # Env files
 .env

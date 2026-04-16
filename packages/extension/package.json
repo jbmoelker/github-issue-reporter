@@ -5,6 +5,8 @@
   "description": "Report GitHub issues directly from your browser",
   "private": true,
   "scripts": {
+    "predev": "node -e \"require('fs').cpSync('assets/icon-dev', 'assets/icon', {recursive: true, force: true})\"",
+    "prebuild": "node -e \"require('fs').cpSync('assets/icon-prod', 'assets/icon', {recursive: true, force: true})\"",
     "dev": "plasmo dev",
     "build": "plasmo build",
     "typecheck": "tsc --noEmit"
@@ -36,6 +38,19 @@
       "https://uploads.github.com/*",
       "http://localhost:3001/*",
       "https://*.workers.dev/*"
-    ]
+    ],
+    "icons": {
+      "16": "../assets/icon/favicon-16x16.png",
+      "32": "../assets/icon/favicon-32x32.png",
+      "48": "../assets/icon/android-chrome-192x192.png",
+      "128": "../assets/icon/android-chrome-512x512.png"
+    },
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "../assets/icon/favicon-16x16.png",
+        "32": "../assets/icon/favicon-32x32.png"
+      }
+    }
   }
 }
