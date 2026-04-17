@@ -5,10 +5,13 @@ main = ".output/server/index.mjs"
 # Set secrets via: wrangler secret put NITRO_GITHUB_CLIENT_ID
 # Set secrets via: wrangler secret put NITRO_GITHUB_CLIENT_SECRET
 # Set vars:
-# [vars]
-# NITRO_API_BASE_URL = "https://github-issue-reporter-api.your-subdomain.workers.dev"
+[vars]
+NITRO_API_BASE_URL = "https://github-issue-reporter-api.jbmoelker.workers.dev"
+
+[site]
+bucket = ".output/public"
 
 [[kv_namespaces]]
-binding = "OAUTH_STATE_KV"
-id = "replace-with-your-kv-namespace-id"
-preview_id = "replace-with-your-preview-kv-namespace-id"
+binding = "GITHUB_ISSUE_REPORTER_OAUTH_STATE_KV"
+id = "3e44fff1fc6e4ceb97c6c05da4e43904"
+preview_id = "970ffb261aef4892a16f5423bdd17847"

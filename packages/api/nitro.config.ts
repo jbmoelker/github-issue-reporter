@@ -5,10 +5,6 @@ const isCloudflare = process.env.NITRO_PRESET === 'cloudflare-module'
 export default defineNitroConfig({
   preset: process.env.NITRO_PRESET || 'node-server',
 
-  devServer: {
-    port: Number(process.env.PORT ?? 3001),
-  },
-
   runtimeConfig: {
     githubClientId: '',
     githubClientSecret: '',
@@ -17,7 +13,7 @@ export default defineNitroConfig({
 
   storage: {
     'oauth-state': isCloudflare
-      ? { driver: 'cloudflare-kv-binding', binding: 'OAUTH_STATE_KV' }
+      ? { driver: 'cloudflare-kv-binding', binding: 'GITHUB_ISSUE_REPORTER_OAUTH_STATE_KV' }
       : { driver: 'memory' },
   },
 

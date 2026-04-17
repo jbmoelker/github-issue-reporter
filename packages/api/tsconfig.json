@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["nitropack/types"]
+    "types": ["nitropack/types", "node"]
   },
-  "include": ["routes/**/*.ts", "middleware/**/*.ts", "nitro.config.ts"]
+  "include": ["routes/**/*.ts", "middleware/**/*.ts", "nitro.config.ts", ".nitro/types/*.d.ts"]
 }

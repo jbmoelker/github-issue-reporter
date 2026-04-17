@@ -6,15 +6,17 @@
   "scripts": {
     "dev": "nitro dev",
     "build": "nitro build",
-    "typecheck": "tsc --noEmit",
-    "deploy": "wrangler deploy"
+    "typecheck": "nitro prepare && tsc --noEmit",
+    "setup": "node setup-cloudflare.mjs",
+    "deploy": "NITRO_PRESET=cloudflare-module nitro build && wrangler deploy"
   },
   "dependencies": {
     "@github-issue-reporter/shared": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "nitropack": "^2.9.7",
     "typescript": "^5.5.0",
-    "wrangler": "^3.60.0"
+    "wrangler": "^4.83.0"
   }
 }
