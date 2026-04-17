@@ -9,6 +9,7 @@
     "prebuild": "node -e \"require('fs').cpSync('assets/icon-prod', 'assets/icon', {recursive: true, force: true})\"",
     "dev": "plasmo dev",
     "build": "plasmo build",
+    "package": "plasmo package",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

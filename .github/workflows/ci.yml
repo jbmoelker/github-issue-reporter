@@ -58,3 +58,51 @@ jobs:
       - run: pnpm --filter @github-issue-reporter/extension build -- --target=${{ matrix.target }}
         env:
           PLASMO_PUBLIC_API_URL: ${{ vars.API_URL }}
+      - run: pnpm --filter @github-issue-reporter/extension run package -- --target=${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-${{ matrix.target }}
+          path: packages/extension/build/${{ matrix.target }}-prod.zip
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build-extension]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: extension-*
+          merge-multiple: true
+      - name: Update latest pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release delete latest --yes || true
+          gh release create latest \
+            --prerelease \
+            --title "Latest build" \
+            --notes "Auto-published from [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})" \
+            *.zip
+
+  publish-chrome:
+    name: Publish to Chrome Web Store
+    runs-on: ubuntu-latest
+    needs: [release]
+    # Enable by setting repository variable CWS_PUBLISH=true and adding secrets:
+    # CWS_EXTENSION_ID, CWS_CLIENT_ID, CWS_CLIENT_SECRET, CWS_REFRESH_TOKEN
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.CWS_PUBLISH == 'true'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-chrome-mv3
+      - name: Upload to Chrome Web Store
+        run: npx chrome-webstore-upload-cli upload --auto-publish --source chrome-mv3-prod.zip
+        env:
+          EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
