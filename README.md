@@ -102,12 +102,24 @@ pnpm --filter @github-issue-reporter/api build
 pnpm typecheck
 ```
 
+## CI
+
+GitHub Actions runs on every push to `main` and on pull requests:
+
+| Job | What it does |
+|-----|-------------|
+| `typecheck` | Runs `tsc --noEmit` across all packages |
+| `build-api` | Builds the Nitro API for the `node-server` preset |
+| `build-extension` | Builds and packages Chrome + Firefox extensions, uploads ZIPs as workflow artifacts |
+| `release` | *(main only)* Creates/updates the rolling `latest` pre-release on GitHub Releases |
+| `publish-chrome` | *(main only, opt-in)* Uploads to Chrome Web Store — enable by setting `CWS_PUBLISH=true` and the four CWS secrets |
+
 ## Deployment
 
 | Package | Target | Guide |
 |---------|--------|-------|
 | `packages/api` | Cloudflare Workers | [API deployment](./packages/api/README.md#deployment) |
-| `packages/extension` | Chrome Web Store / Firefox Add-ons | [Extension deployment](./packages/extension/README.md#deployment) |
+| `packages/extension` | GitHub Releases / Chrome Web Store | [Extension deployment](./packages/extension/README.md#deployment) |
 
 ## Decision log
 

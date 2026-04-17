@@ -115,6 +115,8 @@ pnpm dev:extension
 
 Plasmo opens Chrome with the extension loaded automatically. Changes hot-reload.
 
+The dev build uses the icons from `assets/icon-dev/` (copied automatically by the `predev` script), so the toolbar icon looks different from the production build — making it easy to tell them apart when both are installed.
+
 ### 4. Open the popup
 
 Click the extension icon in the Chrome toolbar. If it's not pinned, find it in the extensions puzzle-piece menu.
@@ -129,21 +131,21 @@ pnpm build
 pnpm build -- --target=firefox-mv2
 ```
 
-Output lands in `build/chrome-mv3-prod/` (or `firefox-mv2-prod/`).
+Output lands in `build/chrome-mv3-prod/` (or `firefox-mv2-prod/`). The `prebuild` script automatically copies `assets/icon-prod/` into place before building.
+
+To also create the submission ZIP:
+
+```bash
+pnpm run package
+# or with a specific target:
+pnpm run package -- --target=firefox-mv2
+```
 
 ## Deployment
 
-### Chrome Web Store
+### GitHub Releases (automatic)
 
-1. Build: `pnpm build`
-2. Zip the `build/chrome-mv3-prod/` directory
-3. Upload to [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
-
-### Firefox Add-ons (AMO)
-
-1. Build: `pnpm build -- --target=firefox-mv2`
-2. Zip the `build/firefox-mv2-prod/` directory
-3. Upload to [Firefox Add-on Developer Hub](https://addons.mozilla.org/developers/)
+CI publishes a rolling `latest` pre-release to GitHub Releases on every push to `main`, attaching ZIPs for both Chrome and Firefox. Anyone can grab the latest build from the Releases page and install it manually.
 
 ### Loading unpacked (for testing)
 
@@ -151,6 +153,21 @@ Output lands in `build/chrome-mv3-prod/` (or `firefox-mv2-prod/`).
 2. Go to `chrome://extensions/`
 3. Enable "Developer mode"
 4. Click "Load unpacked" and select `build/chrome-mv3-prod/`
+
+### Chrome Web Store (automatic via CI)
+
+CI includes a `publish-chrome` job that uploads to the Chrome Web Store on every push to `main`. It is disabled by default — enable it once the extension has been submitted and approved manually:
+
+1. Submit the first version manually via the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+2. Once approved, set the repository variable `CWS_PUBLISH=true` in GitHub repository settings
+3. Add four repository secrets: `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`
+
+See the [Chrome Web Store API docs](https://developer.chrome.com/docs/webstore/using-api) for how to obtain the OAuth credentials.
+
+### Firefox Add-ons (AMO)
+
+1. Build and package: `pnpm build -- --target=firefox-mv2 && pnpm run package -- --target=firefox-mv2`
+2. Upload `build/firefox-mv2-prod.zip` to the [Firefox Add-on Developer Hub](https://addons.mozilla.org/developers/)
 
 ## Environment variables
 

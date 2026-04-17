@@ -90,19 +90,26 @@ The API runs on `http://localhost:3001`. In dev mode, OAuth state is held in mem
 
 ## Deployment
 
+Wrangler is a dev dependency — no global install needed. All commands run through pnpm scripts.
+
 ### Prerequisites
 
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) installed and authenticated (`wrangler login`)
-- A Cloudflare account with Workers enabled
+- A Cloudflare account with Workers and KV enabled
+- A [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens) with **Workers Scripts: Edit** and **Workers KV Storage: Edit** permissions
+- Your [Cloudflare Account ID](https://dash.cloudflare.com) (Workers & Pages → Overview → right sidebar)
 
-### 1. Create a KV namespace
+### 1. Set Cloudflare credentials
 
 ```bash
-wrangler kv namespace create OAUTH_STATE_KV
-wrangler kv namespace create OAUTH_STATE_KV --preview
+cp .env.example .env
 ```
 
-Copy the `id` and `preview_id` values into `wrangler.toml`.
+Edit `.env` and fill in:
+
+```
+CLOUDFLARE_ACCOUNT_ID=your_account_id
+CLOUDFLARE_API_TOKEN=your_api_token
+```
 
 ### 2. Create a production GitHub OAuth App
 
@@ -112,34 +119,42 @@ Same as the dev app, but set the callback URL to your worker's URL:
 https://github-issue-reporter-api.<your-subdomain>.workers.dev/auth/callback
 ```
 
-### 3. Set secrets and vars
+Copy the **Client ID** and generate a **Client Secret**.
+
+### 3. Run the setup script
 
 ```bash
-wrangler secret put NITRO_GITHUB_CLIENT_ID
-wrangler secret put NITRO_GITHUB_CLIENT_SECRET
+pnpm setup
 ```
 
-Set the public base URL in `wrangler.toml` (uncomment and fill in):
+This creates the KV namespaces, patches `wrangler.toml` with the namespace IDs, and prompts you to enter the GitHub OAuth credentials as Wrangler secrets.
+
+### 4. Set the public base URL
+
+Edit `wrangler.toml`:
 
 ```toml
 [vars]
 NITRO_API_BASE_URL = "https://github-issue-reporter-api.<your-subdomain>.workers.dev"
 ```
 
-### 4. Build and deploy
+Your subdomain is visible at [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Overview.
+
+### 5. Deploy
 
 ```bash
-pnpm build
-wrangler deploy
+pnpm run deploy
 ```
 
-The build command sets `NITRO_PRESET=cloudflare-module` automatically (see `package.json`).
+This builds for the `cloudflare-module` preset and deploys via Wrangler.
 
 ## Environment variables
 
-| Variable | Required | Description |
+| Variable | Where | Description |
 |---|---|---|
-| `NITRO_GITHUB_CLIENT_ID` | Yes | GitHub OAuth App client ID |
-| `NITRO_GITHUB_CLIENT_SECRET` | Yes | GitHub OAuth App client secret |
-| `NITRO_API_BASE_URL` | Yes (prod) | Public base URL used to build the OAuth `redirect_uri` |
-| `PORT` | No | Dev server port (default: `3001`) |
+| `CLOUDFLARE_ACCOUNT_ID` | `.env` | Cloudflare account ID (deployment only) |
+| `CLOUDFLARE_API_TOKEN` | `.env` | Cloudflare API token (deployment only) |
+| `NITRO_GITHUB_CLIENT_ID` | Wrangler secret | GitHub OAuth App client ID |
+| `NITRO_GITHUB_CLIENT_SECRET` | Wrangler secret | GitHub OAuth App client secret |
+| `NITRO_API_BASE_URL` | `wrangler.toml` [vars] | Public base URL used to build the OAuth `redirect_uri` |
+| `PORT` | `.env` | Dev server port (default: `3001`) |
